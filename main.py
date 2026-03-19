@@ -82,13 +82,21 @@ def normalize_summary(summary: str) -> str:
 
 def build_ascii_title(title: str) -> str:
     clean = ' '.join(title.split()).strip() or 'Заметка'
-    middle = f'✶  {clean}  ✶'
-    inner_width = len(middle)
-    top = '┌' + '─' * (inner_width - 2) + '┐'
-    bottom_core = '୨ৎ'
-    side = max((inner_width - 2 - len(bottom_core)) // 2, 0)
-    extra = max(inner_width - 2 - len(bottom_core) - side, 0)
-    bottom = '└' + ('─' * side) + bottom_core + ('─' * extra) + '┘'
+    escaped = html.escape(clean)
+    pad_char = ' '
+    side_padding = 5
+    ornament = '୨ৎ'
+
+    middle_inner = (pad_char * side_padding) + f'<b>{escaped}</b>' + (pad_char * side_padding)
+    middle = middle_inner
+
+    top_width = max(len(clean) - 2, 4)
+    top = '┌' + ('─' * top_width) + '┐'
+
+    bottom_width = max(len(clean) - 1, len(ornament) + 2)
+    left_bottom = (bottom_width - len(ornament)) // 2
+    right_bottom = bottom_width - len(ornament) - left_bottom
+    bottom = '└' + ('─' * left_bottom) + ornament + ('─' * right_bottom) + '┘'
     return '\n'.join([top, middle, bottom])
 
 
@@ -97,7 +105,10 @@ def build_note_preview(note: NormalizedNote) -> str:
     body = note.apple_notes_text.strip()
     framed_title = build_ascii_title(title)
     if body:
-        indented_body = '\n'.join(f'  {line}' if line else '' for line in body.splitlines())
+        indented_body = '\n'.join(
+            f'  {html.escape(line)}' if line else ''
+            for line in body.splitlines()
+        )
         return f"{framed_title}\n\n{indented_body}"
     return framed_title
 
@@ -329,7 +340,7 @@ def process_note(chat_id: int, raw_text: str) -> None:
         f'<blockquote>{html.escape(summary_line)}</blockquote>\n'
         'Apple Notes: ✅\n'
         'Obsidian: ✅\n\n'
-        f'<blockquote expandable>{html.escape(note_preview)}</blockquote>'
+        f'<blockquote expandable>{note_preview}</blockquote>'
     )
     send_message(chat_id, response, parse_mode='HTML')
 
