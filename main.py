@@ -325,13 +325,15 @@ def process_note(chat_id: int, raw_text: str) -> None:
     summary_line = summary_line.replace('сохранена', 'записана').replace('нормализована.', 'записана.').replace('нормализована', 'записана')
     note_preview = build_note_preview(note)
 
-    response = (
+    status_response = (
         f'<blockquote>{html.escape(summary_line)}</blockquote>\n'
         'Apple Notes: ✅\n'
-        'Obsidian: ✅\n\n'
-        f'<blockquote expandable>{note_preview}</blockquote>'
+        'Obsidian: ✅'
     )
-    send_message(chat_id, response, parse_mode='HTML')
+    preview_response = f'<blockquote expandable>{note_preview}</blockquote>'
+
+    send_message(chat_id, status_response, parse_mode='HTML')
+    send_message(chat_id, preview_response, parse_mode='HTML')
 
 
 def extract_text(update: dict) -> Optional[Tuple[int, str]]:
