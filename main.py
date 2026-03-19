@@ -266,7 +266,7 @@ def create_apple_note(note: NormalizedNote) -> None:
     title = escape_applescript(note.title)
     note_body_html = plain_text_to_notes_html(note.apple_notes_text)
     if note_body_html:
-        note_body_html = '<br><br>' + note_body_html
+        note_body_html = '<br>' + note_body_html
     body = escape_applescript(note_body_html)
     if APPLE_FOLDER:
         folder = escape_applescript(APPLE_FOLDER)
