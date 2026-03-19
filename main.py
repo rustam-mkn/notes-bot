@@ -77,17 +77,23 @@ def build_ascii_title(title: str) -> str:
     total_padding = inner_width - len(clean)
     left_padding = (total_padding + 1) // 2
     right_padding = total_padding - left_padding
-    middle = (' ' * left_padding) + clean + (' ' * right_padding)
     top = '┌' + ('─' * inner_width) + '┐'
 
     left_bottom = (inner_width - len(ornament)) // 2
     right_bottom = inner_width - len(ornament) - left_bottom
     bottom = '└' + ('─' * left_bottom) + ornament + ('─' * right_bottom) + '┘'
 
-    return '\n'.join(
-        f'<code>{html.escape(line)}</code>'
-        for line in (top, middle, bottom)
+    middle = (
+        f'<code>{html.escape(" " * left_padding)}</code>'
+        f'<b>{html.escape(clean)}</b>'
+        f'<code>{html.escape(" " * right_padding)}</code>'
     )
+
+    return '\n'.join([
+        f'<code>{html.escape(top)}</code>',
+        middle,
+        f'<code>{html.escape(bottom)}</code>',
+    ])
 
 
 def build_note_preview(note: NormalizedNote) -> str:
@@ -258,7 +264,10 @@ def plain_text_to_notes_html(text: str) -> str:
 
 def create_apple_note(note: NormalizedNote) -> None:
     title = escape_applescript(note.title)
-    body = escape_applescript(plain_text_to_notes_html(note.apple_notes_text))
+    note_body_html = plain_text_to_notes_html(note.apple_notes_text)
+    if note_body_html:
+        note_body_html = '<br><br>' + note_body_html
+    body = escape_applescript(note_body_html)
     if APPLE_FOLDER:
         folder = escape_applescript(APPLE_FOLDER)
         script = f'''
