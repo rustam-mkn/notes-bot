@@ -1,30 +1,51 @@
 # Telegram Notes Bot
 
-Self-contained Telegram bot on Python standard library.
+Телеграм-бот для заметок на Python без внешних Python-зависимостей.
 
-What it does:
-- accepts notes from Telegram via long polling
-- normalizes text through Mistral API
-- saves Markdown notes to Obsidian
-- creates notes in Apple Notes via `osascript`
+## Что делает бот
 
-## Run
+- принимает заметки из Telegram через long polling
+- нормализует текст через Mistral API
+- сохраняет Markdown-заметки в Obsidian
+- создаёт заметки в Apple Notes через `osascript`
 
-Create `config.json` from `config.example.json` and fill in your own tokens/paths.
+## Зависимости
+
+У проекта нет `pip`-зависимостей и нет `requirements.txt`: используется только стандартная библиотека Python.
+
+Для работы нужны:
+- Python 3.10+
+- macOS с приложением Apple Notes
+- `osascript` (входит в macOS)
+- токен Telegram-бота
+- API-ключ Mistral
+- существующее хранилище Obsidian или папка для Markdown-файлов
+
+## Настройка
+
+1. Создайте `config.json` на основе `config.example.json` и заполните его своими значениями.
+2. Убедитесь, что заданы поля:
+   - `telegram_bot_token`
+   - `llm_api_key`
+   - `obsidian_notes_dir`
+   - при необходимости: `apple_notes_folder`, `llm_model`, `poll_interval_seconds`, `default_chat_id`
+3. Откройте Apple Notes хотя бы один раз на этом Mac. Если нужна синхронизация с iPhone, убедитесь, что включены iCloud Notes.
+
+## Запуск
 
 ```bash
 cd /Users/user/Dev/bot/notes
 python3 main.py
 ```
 
-## Commands
+## Команды
 
 - `/start`
 - `/help`
 - `/note текст заметки`
 
-Plain text messages are treated as notes automatically.
+Обычные текстовые сообщения тоже обрабатываются как заметки.
 
 ## Apple Notes
 
-The bot saves notes directly into the main root of your default Apple Notes account, so they appear alongside your existing notes and sync to iPhone through iCloud Notes.
+Бот сохраняет заметки либо в корень вашей основной учётной записи Apple Notes, либо в папку из `apple_notes_folder`, если она указана в конфиге.
