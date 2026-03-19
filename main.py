@@ -75,8 +75,8 @@ def build_ascii_title(title: str) -> str:
     inner_width = max((side_padding * 2) + len(clean), len(ornament) + 2, 4)
 
     total_padding = inner_width - len(clean)
-    left_padding = (total_padding + 1) // 2
-    right_padding = total_padding - left_padding
+    left_padding = ((total_padding + 1) // 2) + 1
+    right_padding = max(total_padding - left_padding, 0)
     top = '┌' + ('─' * inner_width) + '┐'
 
     left_bottom = (inner_width - len(ornament)) // 2
