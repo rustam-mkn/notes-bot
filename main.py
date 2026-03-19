@@ -9,12 +9,13 @@ import traceback
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_PATH = BASE_DIR / 'config.json'
+STARTUP_TIME = datetime.now(timezone.utc).timestamp()
 PROMPT = """Ты помощник по нормализации быстрых заметок для Telegram-бота.
 Верни строго JSON без markdown-обертки и без пояснений.
 
@@ -81,10 +82,13 @@ def normalize_summary(summary: str) -> str:
 
 def build_ascii_title(title: str) -> str:
     clean = ' '.join(title.split()).strip() or 'Заметка'
-    inner = f'  {clean}  '
-    top = '+' + '-' * len(inner) + '+'
-    middle = '|' + inner + '|'
-    bottom = '+' + '-' * len(inner) + '+'
+    middle = f'✶  {clean}  ✶'
+    inner_width = len(middle)
+    top = '┌' + '─' * (inner_width - 2) + '┐'
+    bottom_core = '୨ৎ'
+    side = max((inner_width - 2 - len(bottom_core)) // 2, 0)
+    extra = max(inner_width - 2 - len(bottom_core) - side, 0)
+    bottom = '└' + ('─' * side) + bottom_core + ('─' * extra) + '┘'
     return '\n'.join([top, middle, bottom])
 
 
@@ -334,6 +338,9 @@ def extract_text(update: dict) -> Optional[Tuple[int, str]]:
     message = update.get('message')
     if not message:
         return None
+    message_date = message.get('date')
+    if isinstance(message_date, int) and message_date < STARTUP_TIME - 2:
+        return None
     text = message.get('text')
     if not text:
         return None
@@ -359,16 +366,8 @@ def handle_update(update: dict) -> None:
     process_note(chat_id, text)
 
 
-def bootstrap_offset() -> Optional[int]:
-    updates = get_updates(None)
-    items = updates.get('result', [])
-    if not items:
-        return None
-    return items[-1]['update_id'] + 1
-
-
 def main() -> None:
-    offset = bootstrap_offset()
+    offset = None
     print('Bot is running')
     if DEFAULT_CHAT_ID:
         print(f'Default chat id from config: {DEFAULT_CHAT_ID}')
