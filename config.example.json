@@ -1,0 +1,10 @@
+{
+  "telegram_bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
+  "llm_provider": "mistral",
+  "llm_api_key": "YOUR_MISTRAL_API_KEY",
+  "llm_model": "mistral-small-latest",
+  "obsidian_notes_dir": "/absolute/path/to/obsidian/notes",
+  "apple_notes_folder": null,
+  "poll_interval_seconds": 2,
+  "default_chat_id": null
+}
