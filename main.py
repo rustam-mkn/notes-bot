@@ -68,36 +68,26 @@ def append_note_date(text: str) -> str:
     return f"{cleaned}\n\n{stamp}"
 
 
-def normalize_summary(summary: str) -> str:
-    clean = ' '.join(summary.split()).strip()
-    clean = clean.replace('записано записана', 'записано')
-    clean = clean.replace('записана записана', 'записана')
-    clean = clean.replace('записано записано', 'записано')
-    if clean.endswith('записано.') or clean.endswith('записана.'):
-        return clean
-    if clean.endswith('записано') or clean.endswith('записана'):
-        return clean + '.'
-    return clean.rstrip('.') + ' записана.'
-
-
 def build_ascii_title(title: str) -> str:
     clean = ' '.join(title.split()).strip() or 'Заметка'
-    escaped = html.escape(clean)
-    pad_char = ' '
-    side_padding = 5
+    side_padding = 4
     ornament = '୨ৎ'
+    inner_width = max((side_padding * 2) + len(clean), len(ornament) + 2, 4)
 
-    middle_inner = (pad_char * side_padding) + f'<b>{escaped}</b>' + (pad_char * side_padding)
-    middle = middle_inner
+    total_padding = inner_width - len(clean)
+    left_padding = (total_padding + 1) // 2
+    right_padding = total_padding - left_padding
+    middle = (' ' * left_padding) + clean + (' ' * right_padding)
+    top = '┌' + ('─' * inner_width) + '┐'
 
-    top_width = max(len(clean) - 2, 4)
-    top = '┌' + ('─' * top_width) + '┐'
-
-    bottom_width = max(len(clean) - 1, len(ornament) + 2)
-    left_bottom = (bottom_width - len(ornament)) // 2
-    right_bottom = bottom_width - len(ornament) - left_bottom
+    left_bottom = (inner_width - len(ornament)) // 2
+    right_bottom = inner_width - len(ornament) - left_bottom
     bottom = '└' + ('─' * left_bottom) + ornament + ('─' * right_bottom) + '┘'
-    return '\n'.join([top, middle, bottom])
+
+    return '\n'.join(
+        f'<code>{html.escape(line)}</code>'
+        for line in (top, middle, bottom)
+    )
 
 
 def build_note_preview(note: NormalizedNote) -> str:
@@ -331,9 +321,8 @@ def process_note(chat_id: int, raw_text: str) -> None:
     create_apple_note(note)
     write_obsidian(note)
 
-    summary_line = normalize_summary(
-        note.summary.replace('сохранена', 'записана').replace('нормализована.', 'записана.').replace('нормализована', 'записана')
-    )
+    summary_line = ' '.join(note.summary.split()).strip()
+    summary_line = summary_line.replace('сохранена', 'записана').replace('нормализована.', 'записана.').replace('нормализована', 'записана')
     note_preview = build_note_preview(note)
 
     response = (
